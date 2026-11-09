@@ -1,0 +1,525 @@
+/* ============================================================
+   Portfolio — Custom CSS
+   Supports: Modern (default), Glass (data-theme="glass"), Mono (data-theme="mono")
+   Dark mode: .dark class on <html>
+   ============================================================ */
+
+/* ---------- Base ---------- */
+:root {
+  --primary: #10b981;
+  --primary-hover: #059669;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  color: #0f172a;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+/* ---------- Gradient Text (Modern default) ---------- */
+.gradient-text {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 40%, #0f172a 80%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 6s ease infinite;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 40%, #f8fafc 80%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* ---------- Animations ---------- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(1.05); }
+}
+@keyframes shimmer {
+  0%       { left: -100%; }
+  50%, 100%{ left: 150%; }
+}
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.animate-float          { animation: float 6s ease-in-out infinite; }
+.animate-float-delayed  { animation: float 8s ease-in-out 2s infinite; }
+.animate-pulse-glow     { animation: pulse-glow 4s ease-in-out infinite; }
+
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* ---------- Button Shimmer ---------- */
+.btn-shimmer { position: relative; overflow: hidden; }
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ---------- Typing cursor ---------- */
+.typing-cursor {
+  display: inline-block;
+  width: 2px; height: 1em;
+  background-color: #10b981;
+  margin-left: 2px;
+  animation: cursor-blink 1s step-end infinite;
+  vertical-align: middle;
+}
+
+/* ---------- Skill tag hover ---------- */
+.skill-tag { transition: all 0.25s ease; }
+.skill-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16,185,129,0.15);
+}
+
+/* ---------- Custom scrollbar ---------- */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+
+/* ============================================================
+   HERO: Default (Modern + Glass) vs Mono toggling
+   ============================================================ */
+
+/* By default show Modern/Glass hero, hide Mono hero */
+.hero-default { display: flex; }
+.hero-mono    { display: none; }
+
+/* On Mono theme: flip visibility */
+[data-theme="mono"] .hero-default { display: none !important; }
+[data-theme="mono"] .hero-mono    { display: block !important; }
+
+/* Within Modern+Glass hero: show modern elements, hide glass elements */
+.modern-badge,
+.modern-cta,
+.modern-secondary,
+.modern-glow,
+.modern-card   { display: block; }
+
+.glass-badge,
+.glass-cta,
+.glass-secondary,
+.glass-glow,
+.glass-card,
+.glass-orb     { display: none; }
+
+/* Glass theme: flip hero element visibility */
+[data-theme="glass"] .modern-badge   { display: none !important; }
+[data-theme="glass"] .modern-cta     { display: none !important; }
+[data-theme="glass"] .modern-secondary { display: none !important; }
+[data-theme="glass"] .modern-glow    { display: none !important; }
+[data-theme="glass"] .modern-card    { display: none !important; }
+[data-theme="glass"] .glass-badge    { display: block !important; }
+[data-theme="glass"] .glass-cta      { display: inline-flex !important; }
+[data-theme="glass"] .glass-secondary{ display: inline-flex !important; }
+[data-theme="glass"] .glass-glow     { display: block !important; }
+[data-theme="glass"] .glass-card     { display: block !important; }
+[data-theme="glass"] .glass-orb      { display: block !important; }
+
+/* Hide ambient orbs on glass (they're replaced by glass-orb) */
+[data-theme="glass"] .gradient-orb   { display: none !important; }
+
+
+/* ============================================================
+   GLASS THEME  (data-theme="glass")
+   ============================================================ */
+
+[data-theme="glass"]:not(.dark) body {
+  background-color: #f1f5f9;
+  background-image:
+    radial-gradient(at 0% 0%,   rgba(59,130,246,0.18)  0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(168,85,247,0.18)  0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(236,72,153,0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(6,182,212,0.18)   0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+[data-theme="glass"].dark body {
+  background-color: #060913;
+  background-image:
+    radial-gradient(at 0% 0%,   rgba(6,182,212,0.18)   0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(168,85,247,0.18) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(59,130,246,0.12)  0px, transparent 50%);
+  background-attachment: fixed;
+  color: #f8fafc;
+}
+
+/* Glass gradient text */
+[data-theme="glass"] .gradient-text {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="glass"].dark .gradient-text {
+  background: linear-gradient(135deg, #22d3ee 0%, #60a5fa 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass hero heading */
+[data-theme="glass"] .hero-heading {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-theme="glass"].dark .hero-heading {
+  background: linear-gradient(135deg, #22d3ee 0%, #60a5fa 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass nav */
+[data-theme="glass"] nav {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+}
+[data-theme="glass"].dark nav {
+  background: rgba(6, 9, 19, 0.75) !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Glass section backgrounds */
+[data-theme="glass"]:not(.dark) section {
+  background-color: transparent !important;
+}
+[data-theme="glass"].dark section {
+  background-color: transparent !important;
+}
+
+/* Glass card overrides */
+[data-theme="glass"]:not(.dark) .bg-white,
+[data-theme="glass"]:not(.dark) .bg-slate-50,
+[data-theme="glass"]:not(.dark) .bg-slate-50\/70 {
+  background-color: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+[data-theme="glass"].dark .bg-slate-900,
+[data-theme="glass"].dark .bg-slate-800,
+[data-theme="glass"].dark .bg-slate-950,
+[data-theme="glass"].dark .bg-slate-900\/80,
+[data-theme="glass"].dark .bg-slate-900\/60 {
+  background-color: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Glass Badges & Section Pills */
+[data-theme="glass"] .bg-emerald-500\/10 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+  backdrop-filter: blur(12px);
+}
+[data-theme="glass"].dark .bg-emerald-500\/10 {
+  background-color: rgba(6, 182, 212, 0.12) !important;
+  border-color: rgba(6, 182, 212, 0.25) !important;
+  backdrop-filter: blur(12px);
+}
+
+/* Glass Accent Text & Borders */
+[data-theme="glass"] .text-emerald-500,
+[data-theme="glass"] .text-emerald-400 { color: #3b82f6 !important; }
+[data-theme="glass"].dark .text-emerald-500,
+[data-theme="glass"].dark .text-emerald-400 { color: #22d3ee !important; }
+
+[data-theme="glass"] .border-emerald-500 { border-color: #3b82f6 !important; }
+[data-theme="glass"].dark .border-emerald-500 { border-color: #22d3ee !important; }
+
+[data-theme="glass"] .bg-emerald-500,
+[data-theme="glass"] .bg-emerald-600 {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
+}
+
+/* Glass card hover glow */
+[data-theme="glass"] .project-card-item:hover,
+[data-theme="glass"] .group:hover .glass-card-hover {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 12px 40px 0 rgba(37, 99, 235, 0.25) !important;
+}
+[data-theme="glass"].dark .project-card-item:hover {
+  border-color: rgba(34, 211, 238, 0.4) !important;
+  box-shadow: 0 12px 40px 0 rgba(6, 182, 212, 0.25) !important;
+}
+
+/* Glass Filter Buttons */
+[data-theme="glass"]:not(.dark) .project-filter-btn:not(.bg-emerald-500) {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(12px);
+  color: #475569 !important;
+}
+[data-theme="glass"].dark .project-filter-btn:not(.bg-emerald-500) {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(12px);
+  color: #94a3b8 !important;
+}
+
+/* Glass skill tag */
+[data-theme="glass"] .skill-tag {
+  backdrop-filter: blur(12px);
+}
+[data-theme="glass"] .skill-tag:hover {
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+[data-theme="glass"].dark .skill-tag:hover {
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.25);
+  border-color: rgba(34, 211, 238, 0.5) !important;
+}
+
+/* Glass Modal Overlay & Content Box */
+[data-theme="glass"] #project-modal-overlay {
+  background-color: rgba(3, 7, 18, 0.75) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+[data-theme="glass"]:not(.dark) #project-modal-overlay > div {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 25px 50px -12px rgba(31, 38, 135, 0.2);
+}
+[data-theme="glass"].dark #project-modal-overlay > div {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+
+/* ============================================================
+   MONO THEME  (data-theme="mono")
+   ============================================================ */
+
+[data-theme="mono"] body {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace !important;
+  background-color: #0b0f19;
+  color: #e2e8f0;
+}
+
+[data-theme="mono"].dark body {
+  background-color: #070a12;
+  color: #f1f5f9;
+}
+
+/* Mono gradient text */
+[data-theme="mono"] .gradient-text {
+  background: linear-gradient(135deg, #22d3ee 0%, #38bdf8 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Mono nav */
+[data-theme="mono"] nav {
+  background: rgba(11,15,25,0.85) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom-color: rgba(255,255,255,0.07) !important;
+}
+[data-theme="mono"] nav .text-slate-600,
+[data-theme="mono"] nav .text-slate-800 { color: #94a3b8 !important; }
+[data-theme="mono"] nav a { color: #94a3b8 !important; }
+[data-theme="mono"] nav a:hover { color: #22d3ee !important; }
+[data-theme="mono"] nav .font-extrabold { color: #f1f5f9 !important; }
+
+/* Mono card overrides */
+[data-theme="mono"] .bg-white {
+  background-color: #0f1422 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: #e2e8f0 !important;
+}
+[data-theme="mono"] .bg-slate-50,
+[data-theme="mono"] .bg-slate-100 {
+  background-color: #131926 !important;
+}
+[data-theme="mono"] .bg-slate-900,
+[data-theme="mono"] .bg-slate-800 {
+  background-color: #0a0d17 !important;
+}
+
+/* Mono accent colours */
+[data-theme="mono"] .text-emerald-500,
+[data-theme="mono"] .text-emerald-400 { color: #22d3ee !important; }
+[data-theme="mono"] .text-slate-600 { color: #94a3b8 !important; }
+[data-theme="mono"] .text-slate-700 { color: #cbd5e1 !important; }
+[data-theme="mono"] .border-emerald-500 { border-color: #06b6d4 !important; }
+
+[data-theme="mono"] .bg-emerald-500,
+[data-theme="mono"] .bg-emerald-600 {
+  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%) !important;
+}
+
+/* Mono section backgrounds */
+[data-theme="mono"] section {
+  background-color: transparent !important;
+}
+
+/* Mono heading accent */
+[data-theme="mono"] h2,
+[data-theme="mono"] h3 { color: #f1f5f9 !important; }
+
+/* Mono skill tag */
+[data-theme="mono"] .skill-tag:hover {
+  box-shadow: 0 4px 12px rgba(6,182,212,0.2);
+}
+
+/* Mono typing cursor */
+[data-theme="mono"] .typing-cursor { background-color: #22d3ee; }
+
+
+/* ============================================================
+   SHARED UTILITIES
+   ============================================================ */
+
+/* Card hover glow effect */
+.card-glow {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+.card-glow:hover {
+  box-shadow: 0 8px 30px -8px rgba(16,185,129,0.2);
+}
+[data-theme="glass"] .card-glow:hover {
+  box-shadow: 0 8px 30px -8px rgba(37,99,235,0.25);
+}
+[data-theme="mono"] .card-glow:hover {
+  box-shadow: 0 8px 30px -8px rgba(6,182,212,0.2);
+}
+
+/* Section alternating backgrounds — Glass theme override */
+[data-theme="glass"] .bg-slate-100\/50,
+[data-theme="glass"] .bg-slate-900\/50 {
+  background-color: rgba(255,255,255,0.3) !important;
+  backdrop-filter: blur(8px);
+}
+[data-theme="glass"].dark .bg-slate-100\/50,
+[data-theme="glass"].dark .bg-slate-900\/50 {
+  background-color: rgba(6,9,19,0.4) !important;
+}
+
+/* Section alternating backgrounds — Mono theme override */
+[data-theme="mono"] .bg-slate-100\/50 {
+  background-color: rgba(11,15,25,0.6) !important;
+}
+[data-theme="mono"] .bg-slate-900\/50 {
+  background-color: rgba(7,10,18,0.6) !important;
+}
+
+/* Navbar theme pill accent for Glass */
+[data-theme="glass"] #theme-dropdown-btn {
+  background-color: rgba(59,130,246,0.1) !important;
+  border-color: rgba(59,130,246,0.2) !important;
+  color: #2563eb !important;
+}
+[data-theme="glass"].dark #theme-dropdown-btn {
+  color: #22d3ee !important;
+  background-color: rgba(6,182,212,0.1) !important;
+  border-color: rgba(6,182,212,0.2) !important;
+}
+[data-theme="glass"] #theme-dropdown-btn span.rounded-full {
+  background-color: #3b82f6 !important;
+}
+
+/* Navbar theme pill accent for Mono */
+[data-theme="mono"] #theme-dropdown-btn {
+  background-color: rgba(6,182,212,0.1) !important;
+  border-color: rgba(6,182,212,0.2) !important;
+  color: #22d3ee !important;
+}
+[data-theme="mono"] #theme-dropdown-btn span.rounded-full {
+  background-color: #22d3ee !important;
+}
+
+/* Mono navbar logo gradient */
+[data-theme="mono"] nav .bg-gradient-to-tr {
+  background: linear-gradient(135deg, #06b6d4, #8b5cf6) !important;
+}
+
+/* Glass navbar link hover */
+[data-theme="glass"] nav a:hover {
+  color: #2563eb !important;
+}
+
+/* Project filter button — Glass/Mono active state */
+[data-theme="glass"] .project-filter-btn.bg-emerald-500 {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
+}
+[data-theme="mono"] .project-filter-btn.bg-emerald-500 {
+  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%) !important;
+}
+
+/* Contact/focus ring - Glass */
+[data-theme="glass"] input:focus,
+[data-theme="glass"] textarea:focus {
+  --tw-ring-color: #3b82f6 !important;
+}
+
+/* Contact/focus ring - Mono */
+[data-theme="mono"] input:focus,
+[data-theme="mono"] textarea:focus {
+  --tw-ring-color: #22d3ee !important;
+}
+
+/* Resume CTA section */
+[data-theme="glass"] .bg-gradient-to-r.from-emerald-500 {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%) !important;
+}
+[data-theme="mono"] .bg-gradient-to-r.from-emerald-500 {
+  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%) !important;
+}
+

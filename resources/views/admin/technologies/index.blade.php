@@ -1,0 +1,343 @@
+@extends('layouts.admin')
+@section('content')
+<div class="max-w-6xl mx-auto">
+    <!-- Top Header -->
+    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Technologies</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage all technologies and tools across your portfolio projects.</p>
+        </div>
+        <button onclick="document.getElementById('addTechModal').classList.remove('hidden')" type="button" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20">
+            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Add Technology
+        </button>
+    </div>
+
+    <!-- Alert Notifications -->
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 flex items-start gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"></i>
+            <div>
+                <span class="font-semibold block mb-0.5 text-red-700 dark:text-red-300">Deletion Blocked</span>
+                <span class="text-sm text-red-600 dark:text-red-400">{{ session('error') }}</span>
+            </div>
+        </div>
+    @endif
+
+    <!-- Search & Filter Controls -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-6 shadow-sm">
+        <form method="GET" action="{{ route('admin.technologies.index') }}" class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <!-- Search Input -->
+            <div class="relative w-full sm:w-80">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                </div>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search technologies..." class="w-full pl-9 pr-3.5 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <!-- Sort, Per Page & Actions -->
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                <!-- Per Page Selector -->
+                <div>
+                    <select name="per_page" onchange="this.form.submit()" class="text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="5" {{ request('per_page', 5) == 5 ? 'selected' : '' }}>Show 5 / page</option>
+                        <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>Show 10 / page</option>
+                        <option value="15" {{ request('per_page') == 15 ? 'selected' : '' }}>Show 15 / page</option>
+                        <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>Show 25 / page</option>
+                    </select>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Sort:</label>
+                    <select name="sort" onchange="this.form.submit()" class="text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="name_asc" {{ request('sort', 'name_asc') == 'name_asc' ? 'selected' : '' }}>Name (A-Z)</option>
+                        <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>Name (Z-A)</option>
+                        <option value="projects_desc" {{ request('sort') == 'projects_desc' ? 'selected' : '' }}>Most Projects</option>
+                        <option value="projects_asc" {{ request('sort') == 'projects_asc' ? 'selected' : '' }}>Least Projects</option>
+                    </select>
+                </div>
+
+                @if(request('search') || request('sort') || request('per_page'))
+                    <a href="{{ route('admin.technologies.index') }}" class="p-2 text-xs font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors whitespace-nowrap" title="Clear Filters">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white dark:bg-gray-800/80 backdrop-blur-sm shadow-sm rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Technology</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Slug</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Linked Projects</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse($items as $item)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                            <div class="flex items-center gap-2">
+                                <span>{{ $item->name }}</span>
+                                @if($item->url)
+                                    <a href="{{ $item->url }}" target="_blank" class="text-gray-400 hover:text-indigo-500" title="Visit Documentation">
+                                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-mono text-gray-500 dark:text-gray-400">
+                            {{ $item->slug }}
+                        </td>
+                        <td class="px-6 py-4 text-sm relative">
+                            @if($item->projects_count > 0)
+                                <button type="button" onclick="toggleTechPopover({{ $item->id }})" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 hover:bg-indigo-200 dark:hover:bg-indigo-500/20 transition-colors">
+                                    <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+                                    {{ $item->projects_count }} {{ Str::plural('project', $item->projects_count) }}
+                                </button>
+
+                                <!-- Linked Projects Popover -->
+                                <div id="tech-popover-{{ $item->id }}" class="tech-popover hidden absolute left-6 top-12 z-20 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-3">
+                                    <div class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 flex justify-between items-center">
+                                        <span>Linked Projects ({{ $item->projects_count }})</span>
+                                        <button type="button" onclick="toggleTechPopover({{ $item->id }})" class="text-gray-400 hover:text-gray-600">&times;</button>
+                                    </div>
+                                    <ul class="space-y-1.5 max-h-40 overflow-y-auto">
+                                        @foreach($item->projects as $p)
+                                            <li>
+                                                <a href="{{ route('admin.projects.edit', $p->id) }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline block truncate">
+                                                    &bull; {{ $p->title }}
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                                    0 projects
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-right text-sm font-medium space-x-1">
+                            <button type="button" onclick="document.getElementById('viewTechModal-{{ $item->id }}').classList.remove('hidden')" class="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-md transition-colors" title="View Technology Details">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
+                            <button type="button" onclick="document.getElementById('editTechModal-{{ $item->id }}').classList.remove('hidden')" class="p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors" title="Edit">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
+                            <form action="{{ route('admin.technologies.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Delete this technology?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors" title="Delete">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-col items-center justify-center">
+                                <i data-lucide="cpu" class="w-10 h-10 text-gray-400 mb-2"></i>
+                                <p class="text-base font-medium">No technologies found</p>
+                                <p class="text-xs mt-1">Try adjusting your search or add a new technology.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Bar -->
+        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+                Showing <span class="font-semibold text-gray-900 dark:text-white">{{ $items->firstItem() ?? 0 }}</span> to <span class="font-semibold text-gray-900 dark:text-white">{{ $items->lastItem() ?? 0 }}</span> of <span class="font-semibold text-gray-900 dark:text-white">{{ $items->total() }}</span> technologies
+            </div>
+            <div>
+                {{ $items->links() }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Technology Modal -->
+    <div id="addTechModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div onclick="document.getElementById('addTechModal').classList.add('hidden')" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+        
+        <!-- Modal Dialog -->
+        <div class="relative z-10 w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Add New Technology</h3>
+                <button onclick="document.getElementById('addTechModal').classList.add('hidden')" type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form action="{{ route('admin.technologies.store') }}" method="POST">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Technology Name *</label>
+                    <input type="text" name="name" required placeholder="e.g. Docker, Redis, Tailwind CSS" class="w-full px-3.5 py-2.5 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documentation URL (optional)</label>
+                    <input type="url" name="url" placeholder="https://example.com" class="w-full px-3.5 py-2.5 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button onclick="document.getElementById('addTechModal').classList.add('hidden')" type="button" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-md shadow-indigo-500/20">
+                        Save Technology
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Technology Modals -->
+    @foreach($items as $item)
+    <div id="viewTechModal-{{ $item->id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 text-left font-normal">
+        <!-- Backdrop -->
+        <div onclick="document.getElementById('viewTechModal-{{ $item->id }}').classList.add('hidden')" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+        
+        <!-- Modal Dialog -->
+        <div class="relative z-10 w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700 mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <i data-lucide="cpu" class="w-4 h-4"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Technology Details</h3>
+                </div>
+                <button onclick="document.getElementById('viewTechModal-{{ $item->id }}').classList.add('hidden')" type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Title Header -->
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ $item->name }}</h4>
+                    <p class="text-xs font-mono text-gray-500 dark:text-gray-400 mt-1">Slug: {{ $item->slug }}</p>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="grid grid-cols-1 gap-4 text-sm">
+                    <div class="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg border border-gray-200/60 dark:border-gray-700/60">
+                        <span class="block text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium mb-1">Documentation URL</span>
+                        @if($item->url)
+                            <a href="{{ $item->url }}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 font-medium text-xs break-all">
+                                <span>{{ $item->url }}</span>
+                                <i data-lucide="external-link" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                            </a>
+                        @else
+                            <span class="text-gray-500 dark:text-gray-400 text-xs">Not specified</span>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Linked Projects Block -->
+                <div class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-200/60 dark:border-gray-700/60">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Linked Projects</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-400">
+                            {{ $item->projects_count }} {{ Str::plural('project', $item->projects_count) }}
+                        </span>
+                    </div>
+                    @if($item->projects && $item->projects->count() > 0)
+                        <ul class="space-y-2 mt-2">
+                            @foreach($item->projects as $p)
+                                <li class="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $p->title }}</span>
+                                    <a href="{{ route('admin.projects.edit', $p->id) }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-medium flex-shrink-0">
+                                        <span>Edit</span>
+                                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-xs text-gray-500 dark:text-gray-400 italic">No projects using this technology yet.</p>
+                    @endif
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button onclick="document.getElementById('viewTechModal-{{ $item->id }}').classList.add('hidden')" type="button" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                    Close
+                </button>
+                <button onclick="document.getElementById('viewTechModal-{{ $item->id }}').classList.add('hidden'); document.getElementById('editTechModal-{{ $item->id }}').classList.remove('hidden');" type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-md shadow-indigo-500/20 inline-flex items-center">
+                    <i data-lucide="edit-2" class="w-4 h-4 mr-1.5"></i> Edit Technology
+                </button>
+            </div>
+        </div>
+    </div>
+    @endforeach
+
+    <!-- Edit Technology Modals -->
+    @foreach($items as $item)
+    <div id="editTechModal-{{ $item->id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 text-left font-normal">
+        <!-- Backdrop -->
+        <div onclick="document.getElementById('editTechModal-{{ $item->id }}').classList.add('hidden')" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+        
+        <!-- Modal Dialog -->
+        <div class="relative z-10 w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Edit Technology</h3>
+                <button onclick="document.getElementById('editTechModal-{{ $item->id }}').classList.add('hidden')" type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form action="{{ route('admin.technologies.update', $item->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Technology Name *</label>
+                    <input type="text" name="name" value="{{ old('name', $item->name) }}" required class="w-full px-3.5 py-2.5 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documentation URL (optional)</label>
+                    <input type="url" name="url" value="{{ old('url', $item->url) }}" placeholder="https://example.com" class="w-full px-3.5 py-2.5 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button onclick="document.getElementById('editTechModal-{{ $item->id }}').classList.add('hidden')" type="button" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-md shadow-indigo-500/20">
+                        Update Technology
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endforeach
+</div>
+
+<script>
+function toggleTechPopover(id) {
+    const target = document.getElementById('tech-popover-' + id);
+    const isHidden = target.classList.contains('hidden');
+    
+    // Close all popovers
+    document.querySelectorAll('.tech-popover').forEach(el => el.classList.add('hidden'));
+    
+    // Toggle target
+    if (isHidden) {
+        target.classList.remove('hidden');
+    }
+}
+</script>
+@endsection

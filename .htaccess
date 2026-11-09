@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_mime.c>
+        AddType video/mp4 .mp4 .m4v
+        AddType video/webm .webm
+    </IfModule>
+
+    RewriteEngine On
+
+    # Direct requests into the public folder (InfinityFree & Shared Hosting Compatible)
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/ [L]
+</IfModule>
